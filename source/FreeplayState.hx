@@ -1,4 +1,5 @@
 package;
+
 import openfl.utils.Future;
 import openfl.media.Sound;
 import flixel.system.FlxSound;
@@ -19,8 +20,7 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import lime.utils.Assets;
 
-
-#if windows
+#if desktop
 import Discord.DiscordClient;
 #end
 
@@ -38,12 +38,10 @@ class FreeplayState extends MusicBeatState
 	var comboText:FlxText;
 	var diffText:FlxText;
 	var diffCalcText:FlxText;
-	var previewtext:FlxText;
 	var lerpScore:Int = 0;
 	var intendedScore:Int = 0;
 	var combo:String = '';
 
-	//hehe
 	var charInputs:String;
 	var secret:String = "STAR";
 
@@ -56,28 +54,26 @@ class FreeplayState extends MusicBeatState
 
 	public static var openedPreview = false;
 
-	public static var songData:Map<String,Array<SwagSong>> = [];
+	public static var songData:Map<String, Array<SwagSong>> = [];
+
+	#if mobile
+	var touchStartY:Float = 0;
+	var touchMoved:Bool = false;
+	#end
 
 	public static function loadDiff(diff:Int, format:String, name:String, array:Array<SwagSong>)
 	{
-		try 
+		try
 		{
 			array.push(Song.loadFromJson(Highscore.formatSong(format, diff), name));
 		}
-		catch(ex)
-		{
-			// do nada
-		}
+		catch (ex) {}
 	}
 
 	override function create()
 	{
-	
 		var initSonglist = CoolUtil.coolTextFile(Paths.txt('data/freeplaySonglist'));
-
 		var altSonglist = CoolUtil.coolTextFile(Paths.txt('data/freeplaySonglistAlt'));
-
-		//var diffList = "";
 
 		songData = [];
 		songs = [];
@@ -90,18 +86,16 @@ class FreeplayState extends MusicBeatState
 				var meta = new SongMetadata(data[0], Std.parseInt(data[2]), data[1]);
 				songs.push(meta);
 				var format = StringTools.replace(meta.songName, " ", "-");
-				switch (format) {
+				switch (format)
+				{
 					case 'Dad-Battle': format = 'Dadbattle';
 					case 'Philly-Nice': format = 'Philly';
 				}
-	
 				var diffs = [];
-				FreeplayState.loadDiff(0,format,meta.songName,diffs);
-				FreeplayState.loadDiff(1,format,meta.songName,diffs);
-				FreeplayState.loadDiff(2,format,meta.songName,diffs);
-				FreeplayState.songData.set(meta.songName,diffs);
-				trace('loaded diffs for ' + meta.songName);
-	
+				FreeplayState.loadDiff(0, format, meta.songName, diffs);
+				FreeplayState.loadDiff(1, format, meta.songName, diffs);
+				FreeplayState.loadDiff(2, format, meta.songName, diffs);
+				FreeplayState.songData.set(meta.songName, diffs);
 			}
 		}
 
@@ -113,82 +107,50 @@ class FreeplayState extends MusicBeatState
 				var meta = new SongMetadata(data[0], Std.parseInt(data[2]), data[1]);
 				songs.push(meta);
 				var format = StringTools.replace(meta.songName, " ", "-");
-				switch (format) {
+				switch (format)
+				{
 					case 'Dad-Battle': format = 'Dadbattle';
 					case 'Philly-Nice': format = 'Philly';
 				}
-	
 				var diffs = [];
-				FreeplayState.loadDiff(0,format,meta.songName,diffs);
-				FreeplayState.loadDiff(1,format,meta.songName,diffs);
-				FreeplayState.loadDiff(2,format,meta.songName,diffs);
-				FreeplayState.songData.set(meta.songName,diffs);
-				trace('loaded diffs for ' + meta.songName);
-	
+				FreeplayState.loadDiff(0, format, meta.songName, diffs);
+				FreeplayState.loadDiff(1, format, meta.songName, diffs);
+				FreeplayState.loadDiff(2, format, meta.songName, diffs);
+				FreeplayState.songData.set(meta.songName, diffs);
 			}
 		}
 
-		trace("tryin to load sm files");
-
 		#if sys
-		for(i in FileSystem.readDirectory("assets/sm/"))
+		for (i in FileSystem.readDirectory("assets/sm/"))
 		{
-			trace(i);
 			if (FileSystem.isDirectory("assets/sm/" + i))
 			{
-				trace("Reading SM file dir " + i);
 				for (file in FileSystem.readDirectory("assets/sm/" + i))
 				{
 					if (file.contains(" "))
-						FileSystem.rename("assets/sm/" + i + "/" + file,"assets/sm/" + i + "/" + file.replace(" ","_"));
+						FileSystem.rename("assets/sm/" + i + "/" + file, "assets/sm/" + i + "/" + file.replace(" ", "_"));
 					if (file.endsWith(".sm"))
 					{
-						trace("reading " + file);
-						var file:SMFile = SMFile.loadFile("assets/sm/" + i + "/" + file.replace(" ","_"));
-						trace("Converting " + file.header.TITLE);
+						var file:SMFile = SMFile.loadFile("assets/sm/" + i + "/" + file.replace(" ", "_"));
 						var data = file.convertToFNF("assets/sm/" + i + "/converted.json");
-						var meta = new SongMetadata(file.header.TITLE, 0, "sm",file,"assets/sm/" + i);
+						var meta = new SongMetadata(file.header.TITLE, 0, "sm", file, "assets/sm/" + i);
 						songs.push(meta);
 						var song = Song.loadFromJsonRAW(data);
-						songData.set(file.header.TITLE, [song,song,song]);
+						songData.set(file.header.TITLE, [song, song, song]);
 					}
 				}
 			}
 		}
 		#end
 
-		//trace("\n" + diffList);
-
-		/* 
-			if (FlxG.sound.music != null)
-			{
-				if (!FlxG.sound.music.playing)
-					FlxG.sound.playMusic(Paths.music('freakyMenu'));
-			}
-		 */
-
-		 #if windows
-		 // Updating Discord Rich Presence
-		 DiscordClient.changePresence("In the Freeplay Menu", null);
-		 #end
-
-		var isDebug:Bool = false;
-
-		#if debug
-		isDebug = true;
+		#if desktop
+		DiscordClient.changePresence("In the Freeplay Menu", null);
 		#end
 
 		persistentUpdate = true;
 
-		// LOAD MUSIC
-
-		// LOAD CHARACTERS
-
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuBGBlue'));
-		if(FlxG.save.data.antialiasing)
-			{
-				bg.antialiasing = true;
-			}
+		if (FlxG.save.data.antialiasing) bg.antialiasing = true;
 		add(bg);
 
 		grpSongs = new FlxTypedGroup<Alphabet>();
@@ -203,20 +165,12 @@ class FreeplayState extends MusicBeatState
 
 			var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
 			icon.sprTracker = songText;
-
-			// using a FlxGroup is too much fuss!
 			iconArray.push(icon);
 			add(icon);
-
-			// songText.x += 40;
-			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
-			// songText.screenCenter(X);
 		}
 
 		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
-		// scoreText.autoSize = false;
 		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
-		// scoreText.alignment = RIGHT;
 
 		var scoreBG:FlxSprite = new FlxSprite(scoreText.x - 6, 0).makeGraphic(Std.int(FlxG.width * 0.35), 105, 0xFF000000);
 		scoreBG.alpha = 0.6;
@@ -230,45 +184,23 @@ class FreeplayState extends MusicBeatState
 		diffCalcText.font = scoreText.font;
 		add(diffCalcText);
 
-		previewtext = new FlxText(scoreText.x, scoreText.y + 94, 0, "" + (KeyBinds.gamepad ? "X" : "SPACE") + " to preview", 24);
-		previewtext.font = scoreText.font;
-		//add(previewtext);
-
 		comboText = new FlxText(diffText.x + 100, diffText.y, 0, "", 24);
 		comboText.font = diffText.font;
 		add(comboText);
 
 		add(scoreText);
 
+		#if mobile
+		var backHint:FlxText = new FlxText(0, 0, 0, "B", 28);
+		backHint.setFormat(Paths.font("vcr.ttf"), 28, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		backHint.scrollFactor.set();
+		backHint.x = FlxG.width - backHint.width - 10;
+		backHint.y = FlxG.height - backHint.height - 10;
+		add(backHint);
+		#end
+
 		changeSelection();
 		changeDiff();
-
-		// FlxG.sound.playMusic(Paths.music('title'), 0);
-		// FlxG.sound.music.fadeIn(2, 0, 0.8);
-		selector = new FlxText();
-
-		selector.size = 40;
-		selector.text = ">";
-		// add(selector);
-
-		var swag:Alphabet = new Alphabet(1, 0, "swag");
-
-		// JUST DOIN THIS SHIT FOR TESTING!!!
-		/* 
-			var md:String = Markdown.markdownToHtml(Assets.getText('CHANGELOG.md'));
-
-			var texFel:TextField = new TextField();
-			texFel.width = FlxG.width;
-			texFel.height = FlxG.height;
-			// texFel.
-			texFel.htmlText = md;
-
-			FlxG.stage.addChild(texFel);
-
-			// scoreText.textField.htmlText = md;
-
-			trace(md);
-		 */
 
 		charInputs = "";
 
@@ -289,33 +221,29 @@ class FreeplayState extends MusicBeatState
 		for (song in songs)
 		{
 			addSong(song, weekNum, songCharacters[num]);
-
 			if (songCharacters.length != 1)
 				num++;
 		}
 	}
-	
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
 		if (FlxG.sound.music.volume < 0.7)
-		{
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
-		}
+		if (FlxG.sound.music.volume > 0.8)
+			FlxG.sound.music.volume -= 0.5 * FlxG.elapsed;
 
 		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, 0.4));
-
 		if (Math.abs(lerpScore - intendedScore) <= 10)
 			lerpScore = intendedScore;
 
 		scoreText.text = "PERSONAL BEST:" + lerpScore;
 		comboText.text = combo + '\n';
 
-		if (FlxG.sound.music.volume > 0.8)
-		{
-			FlxG.sound.music.volume -= 0.5 * FlxG.elapsed;
-		}
+		#if !mobile
+		checkCodeInput();
 
 		var upP = FlxG.keys.justPressed.UP;
 		var downP = FlxG.keys.justPressed.DOWN;
@@ -323,113 +251,126 @@ class FreeplayState extends MusicBeatState
 
 		var gamepad:FlxGamepad = FlxG.gamepads.lastActive;
 
-		checkCodeInput();
-
 		if (gamepad != null)
 		{
-
-			if (gamepad.justPressed.DPAD_UP)
-			{
-				changeSelection(-1);
-			}
-			if (gamepad.justPressed.DPAD_DOWN)
-			{
-				changeSelection(1);
-			}
-			if (gamepad.justPressed.DPAD_LEFT)
-			{
-				changeDiff(-1);
-			}
-			if (gamepad.justPressed.DPAD_RIGHT)
-			{
-				changeDiff(1);
-			}
-
-			//if (gamepad.justPressed.X && !openedPreview)
-				//openSubState(new DiffOverview());
+			if (gamepad.justPressed.DPAD_UP) changeSelection(-1);
+			if (gamepad.justPressed.DPAD_DOWN) changeSelection(1);
+			if (gamepad.justPressed.DPAD_LEFT) changeDiff(-1);
+			if (gamepad.justPressed.DPAD_RIGHT) changeDiff(1);
 		}
 
-		if (upP)
-		{
-			changeSelection(-1);
-		}
-		if (downP)
-		{
-			changeSelection(1);
-		}
+		if (upP) changeSelection(-1);
+		if (downP) changeSelection(1);
 
-		//if (FlxG.keys.justPressed.SPACE && !openedPreview)
-			//openSubState(new DiffOverview());
-
-		if (FlxG.keys.justPressed.LEFT)
-			changeDiff(-1);
-		if (FlxG.keys.justPressed.RIGHT)
-			changeDiff(1);
+		if (FlxG.keys.justPressed.LEFT) changeDiff(-1);
+		if (FlxG.keys.justPressed.RIGHT) changeDiff(1);
 
 		if (controls.BACK)
-		{
 			FlxG.switchState(new MainMenuState());
-		}
 
 		if (accepted)
+			selectSong();
+		#end
+
+		#if mobile
+		for (touch in FlxG.touches.list)
 		{
-			// adjusting the song name to be compatible
-			var songFormat = StringTools.replace(songs[curSelected].songName, " ", "-");
-			switch (songFormat) {
-				case 'Dad-Battle': songFormat = 'Dadbattle';
-				case 'Philly-Nice': songFormat = 'Philly';
-			}
-			var hmm;
-			try
+			if (touch.justPressed)
 			{
-				hmm = songData.get(songs[curSelected].songName)[curDifficulty];
-				if (hmm == null)
-					return;
-			}
-			catch(ex)
-			{
-				return;
-			}
+				touchStartY = touch.screenY;
+				touchMoved = false;
 
-
-			PlayState.SONG = hmm;
-			PlayState.isStoryMode = false;
-			PlayState.storyDifficulty = curDifficulty;
-			PlayState.storyWeek = songs[curSelected].week;
-			trace('CUR WEEK' + PlayState.storyWeek);
-			#if sys
-			if (songs[curSelected].songCharacter == "sm")
+				var backZoneX = FlxG.width - 80;
+				var backZoneY = FlxG.height - 80;
+				if (touch.screenX >= backZoneX && touch.screenY >= backZoneY)
 				{
-					PlayState.isSM = true;
-					PlayState.sm = songs[curSelected].sm;
-					PlayState.pathToSm = songs[curSelected].path;
+					FlxG.switchState(new MainMenuState());
+					return;
 				}
-			else
-				PlayState.isSM = false;
-			#else
-			PlayState.isSM = false;
-			#end
-			LoadingState.loadAndSwitchState(new PlayState());
+
+				var rightZone = FlxG.width * 0.65;
+				if (touch.screenX >= rightZone)
+				{
+					var diffZoneY = FlxG.height * 0.5;
+					if (touch.screenY < diffZoneY)
+						changeDiff(-1);
+					else
+						changeDiff(1);
+				}
+			}
+
+			if (touch.pressed)
+			{
+				var delta = touch.screenY - touchStartY;
+				if (Math.abs(delta) > 20)
+					touchMoved = true;
+			}
+
+			if (touch.justReleased)
+			{
+				var delta = touch.screenY - touchStartY;
+				if (touchMoved)
+				{
+					if (delta < -20) changeSelection(-1);
+					else if (delta > 20) changeSelection(1);
+				}
+				else if (touch.screenX < FlxG.width * 0.65)
+				{
+					selectSong();
+				}
+			}
 		}
+		#end
+	}
+
+	function selectSong()
+	{
+		var songFormat = StringTools.replace(songs[curSelected].songName, " ", "-");
+		switch (songFormat)
+		{
+			case 'Dad-Battle': songFormat = 'Dadbattle';
+			case 'Philly-Nice': songFormat = 'Philly';
+		}
+		var hmm;
+		try
+		{
+			hmm = songData.get(songs[curSelected].songName)[curDifficulty];
+			if (hmm == null) return;
+		}
+		catch (ex) { return; }
+
+		PlayState.SONG = hmm;
+		PlayState.isStoryMode = false;
+		PlayState.storyDifficulty = curDifficulty;
+		PlayState.storyWeek = songs[curSelected].week;
+		#if sys
+		if (songs[curSelected].songCharacter == "sm")
+		{
+			PlayState.isSM = true;
+			PlayState.sm = songs[curSelected].sm;
+			PlayState.pathToSm = songs[curSelected].path;
+		}
+		else
+			PlayState.isSM = false;
+		#else
+		PlayState.isSM = false;
+		#end
+		LoadingState.loadAndSwitchState(new PlayState());
 	}
 
 	function changeDiff(change:Int = 0)
 	{
 		curDifficulty += change;
+		if (curDifficulty < 0) curDifficulty = 2;
+		if (curDifficulty > 2) curDifficulty = 0;
 
-		if (curDifficulty < 0)
-			curDifficulty = 2;
-		if (curDifficulty > 2)
-			curDifficulty = 0;
-
-
-		// adjusting the highscore song name to be compatible (changeDiff)
 		var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
-		switch (songHighscore) {
+		switch (songHighscore)
+		{
 			case 'Dad-Battle': songHighscore = 'Dadbattle';
 			case 'Philly-Nice': songHighscore = 'Philly';
 		}
-		
+
 		#if !switch
 		intendedScore = Highscore.getScore(songHighscore, curDifficulty);
 		combo = Highscore.getCombo(songHighscore, curDifficulty);
@@ -440,28 +381,15 @@ class FreeplayState extends MusicBeatState
 
 	function changeSelection(change:Int = 0)
 	{
-		#if !switch
-		// NGio.logEvent('Fresh');
-		#end
-
-		// NGio.logEvent('Fresh');
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
-
-
 		curSelected += change;
+		if (curSelected < 0) curSelected = songs.length - 1;
+		if (curSelected >= songs.length) curSelected = 0;
 
-		if (curSelected < 0)
-			curSelected = songs.length - 1;
-		if (curSelected >= songs.length)
-			curSelected = 0;
-
-		// selector.y = (70 * curSelected) + 30;
-		
-		// adjusting the highscore song name to be compatible (changeSelection)
-		// would read original scores if we didn't change packages
 		var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
-		switch (songHighscore) {
+		switch (songHighscore)
+		{
 			case 'Dad-Battle': songHighscore = 'Dadbattle';
 			case 'Philly-Nice': songHighscore = 'Philly';
 		}
@@ -469,34 +397,33 @@ class FreeplayState extends MusicBeatState
 		#if !switch
 		intendedScore = Highscore.getScore(songHighscore, curDifficulty);
 		combo = Highscore.getCombo(songHighscore, curDifficulty);
-		// lerpScore = 0;
 		#end
 
 		diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
-		
+
 		#if PRELOAD_ALL
 		if (songs[curSelected].songCharacter == "sm")
 		{
 			var data = songs[curSelected];
-			trace("Loading " + data.path + "/" + data.sm.header.MUSIC);
+			#if sys
 			var bytes = File.getBytes(data.path + "/" + data.sm.header.MUSIC);
 			var sound = new Sound();
 			sound.loadCompressedDataFromByteArray(bytes.getData(), bytes.length);
 			FlxG.sound.playMusic(sound);
+			#end
 		}
 		else
 			FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0);
 		#end
 
 		var hmm;
-			try
-			{
-				hmm = songData.get(songs[curSelected].songName)[curDifficulty];
-				if (hmm != null)
-					Conductor.changeBPM(hmm.bpm);
-			}
-			catch(ex)
-			{}
+		try
+		{
+			hmm = songData.get(songs[curSelected].songName)[curDifficulty];
+			if (hmm != null)
+				Conductor.changeBPM(hmm.bpm);
+		}
+		catch (ex) {}
 
 		if (openedPreview)
 		{
@@ -505,204 +432,75 @@ class FreeplayState extends MusicBeatState
 		}
 
 		var bullShit:Int = 0;
-
 		for (i in 0...iconArray.length)
-		{
 			iconArray[i].alpha = 0.6;
-		}
-
 		iconArray[curSelected].alpha = 1;
 
 		for (item in grpSongs.members)
 		{
 			item.targetY = bullShit - curSelected;
 			bullShit++;
-
 			item.alpha = 0.6;
-			// item.setGraphicSize(Std.int(item.width * 0.8));
-
-			if (item.targetY == 0)
-			{
-				item.alpha = 1;
-				// item.setGraphicSize(Std.int(item.width));
-			}
+			if (item.targetY == 0) item.alpha = 1;
 		}
 	}
 
-	//Thanks to the Vs Retrospecter team for coding a sick password system
-	//IM SORRY FOR USING YOUR CODE
-	//CODING IS HARD
+	#if !mobile
 	function checkCodeInput()
+	{
+		if (FlxG.keys.justPressed.ANY)
 		{
-			if (FlxG.keys.justPressed.ANY)
+			if (FlxG.keys.justPressed.A) charInputs += 'A';
+			else if (FlxG.keys.justPressed.B) charInputs += 'B';
+			else if (FlxG.keys.justPressed.C) charInputs += 'C';
+			else if (FlxG.keys.justPressed.D) charInputs += 'D';
+			else if (FlxG.keys.justPressed.E) charInputs += 'E';
+			else if (FlxG.keys.justPressed.F) charInputs += 'F';
+			else if (FlxG.keys.justPressed.G) charInputs += 'G';
+			else if (FlxG.keys.justPressed.H) charInputs += 'H';
+			else if (FlxG.keys.justPressed.I) charInputs += 'I';
+			else if (FlxG.keys.justPressed.J) charInputs += 'J';
+			else if (FlxG.keys.justPressed.K) charInputs += 'K';
+			else if (FlxG.keys.justPressed.L) charInputs += 'L';
+			else if (FlxG.keys.justPressed.M) charInputs += 'M';
+			else if (FlxG.keys.justPressed.N) charInputs += 'N';
+			else if (FlxG.keys.justPressed.O) charInputs += 'O';
+			else if (FlxG.keys.justPressed.P) charInputs += 'P';
+			else if (FlxG.keys.justPressed.Q) charInputs += 'Q';
+			else if (FlxG.keys.justPressed.R) charInputs += 'R';
+			else if (FlxG.keys.justPressed.S) charInputs += 'S';
+			else if (FlxG.keys.justPressed.T) charInputs += 'T';
+			else if (FlxG.keys.justPressed.U) charInputs += 'U';
+			else if (FlxG.keys.justPressed.V) charInputs += 'V';
+			else if (FlxG.keys.justPressed.W) charInputs += 'W';
+			else if (FlxG.keys.justPressed.X) charInputs += 'X';
+			else if (FlxG.keys.justPressed.Y) charInputs += 'Y';
+			else if (FlxG.keys.justPressed.Z) charInputs += 'Z';
+			else if (FlxG.keys.justPressed.ZERO) charInputs += '0';
+			else if (FlxG.keys.justPressed.ONE) charInputs += '1';
+			else if (FlxG.keys.justPressed.TWO) charInputs += '2';
+			else if (FlxG.keys.justPressed.THREE) charInputs += '3';
+			else if (FlxG.keys.justPressed.FOUR) charInputs += '4';
+			else if (FlxG.keys.justPressed.FIVE) charInputs += '5';
+			else if (FlxG.keys.justPressed.SIX) charInputs += '6';
+			else if (FlxG.keys.justPressed.SEVEN) charInputs += '7';
+			else if (FlxG.keys.justPressed.EIGHT) charInputs += '8';
+			else if (FlxG.keys.justPressed.NINE) charInputs += '9';
+
+			if (secret.startsWith(charInputs))
 			{
-				if (FlxG.keys.justPressed.A)
+				if (charInputs == secret)
 				{
-					charInputs += 'A';
+					FlxG.sound.play(Paths.sound('Unlock', 'shared'), 1.0);
+					secretUnlocked = true;
+					FlxG.switchState(new MainMenuState());
 				}
-				else if (FlxG.keys.justPressed.B)
-				{
-					charInputs += 'B';
-				}
-				else if (FlxG.keys.justPressed.C)
-				{
-					charInputs += 'C';
-				}
-				else if (FlxG.keys.justPressed.D)
-				{
-					charInputs += 'D';
-				}
-				else if (FlxG.keys.justPressed.E)
-				{
-					charInputs += 'E';
-				}
-				else if (FlxG.keys.justPressed.F)
-				{
-					charInputs += 'F';
-				}
-				else if (FlxG.keys.justPressed.G)
-				{
-					charInputs += 'G';
-				}
-				else if (FlxG.keys.justPressed.H)
-				{
-					charInputs += 'H';
-				}
-				else if (FlxG.keys.justPressed.I)
-				{
-					charInputs += 'I';
-				}
-				else if (FlxG.keys.justPressed.J)
-				{
-					charInputs += 'J';
-				}
-				else if (FlxG.keys.justPressed.K)
-				{
-					charInputs += 'K';
-				}
-				else if (FlxG.keys.justPressed.L)
-				{
-					charInputs += 'L';
-				}
-				else if (FlxG.keys.justPressed.M)
-				{
-					charInputs += 'M';
-				}
-				else if (FlxG.keys.justPressed.N)
-				{
-					charInputs += 'N';
-				}
-				else if (FlxG.keys.justPressed.O)
-				{
-					charInputs += 'O';
-				}
-				else if (FlxG.keys.justPressed.P)
-				{
-					charInputs += 'P';
-				}
-				else if (FlxG.keys.justPressed.Q)
-				{
-					charInputs += 'Q';
-				}
-				else if (FlxG.keys.justPressed.R)
-				{
-					charInputs += 'R';
-				}
-				else if (FlxG.keys.justPressed.S)
-				{
-					charInputs += 'S';
-				}
-				else if (FlxG.keys.justPressed.T)
-				{
-					charInputs += 'T';
-				}
-				else if (FlxG.keys.justPressed.U)
-				{
-					charInputs += 'U';
-				}
-				else if (FlxG.keys.justPressed.V)
-				{
-					charInputs += 'V';
-				}
-				else if (FlxG.keys.justPressed.W)
-				{
-					charInputs += 'W';
-				}
-				else if (FlxG.keys.justPressed.X)
-				{
-					charInputs += 'X';
-				}
-				else if (FlxG.keys.justPressed.Y)
-				{
-					charInputs += 'Y';
-				}
-				else if (FlxG.keys.justPressed.Z)
-				{
-					charInputs += 'Z';
-				}
-				else if (FlxG.keys.justPressed.ZERO)
-				{
-					charInputs += '0';
-				}
-				else if (FlxG.keys.justPressed.ONE)
-				{
-					charInputs += '1';
-				}
-				else if (FlxG.keys.justPressed.TWO)
-				{
-					charInputs += '2';
-				}
-				else if (FlxG.keys.justPressed.THREE)
-				{
-					charInputs += '3';
-				}
-				else if (FlxG.keys.justPressed.FOUR)
-				{
-					charInputs += '4';
-				}
-				else if (FlxG.keys.justPressed.FIVE)
-				{
-					charInputs += '5';
-				}
-				else if (FlxG.keys.justPressed.SIX)
-				{
-					charInputs += '6';
-				}
-				else if (FlxG.keys.justPressed.SEVEN)
-				{
-					charInputs += '7';
-				}
-				else if (FlxG.keys.justPressed.EIGHT)
-				{
-					charInputs += '8';
-				}
-				else if (FlxG.keys.justPressed.NINE)
-				{
-					charInputs += '9';
-				}
-	
-				if (secret.startsWith(charInputs))
-				{
-					if (charInputs == secret)
-					{
-						//fr tho this is kinda clunky but it works so i DO NOT CARE LOL
-						FlxG.sound.play(Paths.sound('Unlock', 'shared'), 1.0);
-
-						secretUnlocked = true;
-
-						FlxG.switchState(new MainMenuState());
-
-					}
-					else
-					{
-						if (charInputs.length >= 5)
-		
-						charInputs = '';
-					}
-					
-				}
-		    }
-	    }
+				else if (charInputs.length >= 5)
+					charInputs = '';
+			}
+		}
+	}
+	#end
 }
 
 class SongMetadata
