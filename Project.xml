@@ -118,8 +118,6 @@
 		<set name="ANDROID_GRADLE_VERSION" value="8.3.0" />
 
 		<permission name="android.permission.INTERNET" />
-		<permission name="android.permission.READ_EXTERNAL_STORAGE" />
-		<permission name="android.permission.WRITE_EXTERNAL_STORAGE" />
 		<permission name="android.permission.VIBRATE" />
 	</section>
 
