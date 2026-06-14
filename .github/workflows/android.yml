@@ -58,6 +58,7 @@ jobs:
             [ -f "$f" ] && sed -i '/import io\.newgrounds\.NG;/d; /NGio\./d' "$f" || true
           done
           sed -i '/^import webm\.WebmPlayer;$/d' source/PlayState.hx || true
+          sed -i '/WebmPlayer\./d; /webmHandler\.source\|webmHandler\.makePlayer\|webmHandler\.pause\|webmHandler\.resume\|\.bitmapData/d' source/PlayState.hx || true
 
       - name: Setup Lime Android config
         run: |
