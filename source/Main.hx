@@ -46,7 +46,7 @@ class Main extends Sprite
 			addEventListener(Event.ADDED_TO_STAGE, init);
 	}
 
-	public static var webmHandler:WebmHandler;
+	public static var webmHandler:WebmHandler #if !desktop = null #end;
 
 	private function init(?E:Event):Void
 	{
@@ -71,14 +71,16 @@ class Main extends Sprite
 		}
 
 		#if mobile
-		FlxG.scaleMode = new MobileScaleMode();
+		FlxG.game.setFilters([]);
+		var mobileScale = new MobileScaleMode();
+		FlxG.scaleMode = mobileScale;
 		#end
 
 		#if cpp
 		initialState = Caching;
 		#end
 
-		game = new FlxGame(gameWidth, gameHeight, initialState, zoom, framerate, framerate, skipSplash, startFullscreen);
+		game = new FlxGame(gameWidth, gameHeight, initialState, #if (flixel >= "5.0.0") zoom #else Std.int(zoom) #end, framerate, framerate, skipSplash, startFullscreen);
 		addChild(game);
 
 		#if desktop
