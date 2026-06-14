@@ -48,6 +48,7 @@ jobs:
           haxelib install hscript --quiet
           haxelib install actuate --quiet
           haxelib install polymod --quiet
+          haxelib install extension-webm --quiet
           haxelib install extension-androidtools --quiet
           haxelib run lime setup -alias -y
           printf '\n' | haxelib run lime setup android
