@@ -42,15 +42,22 @@ jobs:
         run: |
           haxelib install lime 8.3.2 --quiet
           haxelib install openfl 9.5.2 --quiet
-          haxelib install flixel 5.2.2 --quiet
-          haxelib install flixel-addons 3.2.1 --quiet
+          haxelib install flixel 5.1.0 --quiet
+          haxelib install flixel-addons 3.0.2 --quiet
           haxelib install flixel-ui 2.6.1 --quiet
-          haxelib install hscript --quiet
+          haxelib install hscript 2.5.0 --quiet
           haxelib install actuate --quiet
-          haxelib install polymod 1.6.0 --quiet
+          haxelib install polymod 1.5.0 --quiet
           haxelib install extension-androidtools --quiet
           haxelib run lime setup -alias -y
           printf '\n' | haxelib run lime setup android
+
+      - name: Patch source files
+        run: |
+          sed -i 's/import io\.newgrounds\.NG;//g' source/Highscore.hx source/KeyBindMenu.hx source/ResultsScreen.hx source/DiffOverview.hx 2>/dev/null || true
+          sed -i 's/NGio\.unlockMedal([^)]*)[^;]*;//g' source/Highscore.hx source/PlayState.hx 2>/dev/null || true
+          sed -i 's/import webm\.WebmPlayer;//g' source/PlayState.hx 2>/dev/null || true
+          sed -i 's/#if cpp$/\n#if cpp/g' source/PlayState.hx 2>/dev/null || true
 
       - name: Setup Lime Android config
         run: |
