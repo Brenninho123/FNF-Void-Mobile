@@ -109,6 +109,7 @@
 
 	<haxedef name="HXCPP_GC_BIG_BLOCKS" />
 	<haxedef name="NAPE_RELEASE_BUILD" unless="debug" />
+	<haxedef name="FLX_LEGACY_SOUND" if="android" />
 
 	<section if="android">
 		<set name="ANDROID_TARGET_SDK_VERSION" value="34" />
