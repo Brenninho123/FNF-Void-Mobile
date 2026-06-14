@@ -7,6 +7,9 @@ Meet A.C. Void, a cosmic pop star with an ego as massive as a black hole. (Don't
 
 Void has heard of your recent musical victories (namely against Daddy Dearest) and despising any competition, he's challenged you to perform against him at his next concert! He can't be as tough as he thinks he is, but be careful. He hasn't garnered galaxy-wide fame for nothing, and there may be something dark under that smug exterior...
 
+## Mobile Credits
+Brenninho: Porter
+
 ## GameBanana:
 https://gamebanana.com/mods/307819
 
