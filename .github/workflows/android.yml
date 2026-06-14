@@ -77,5 +77,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: VsVoid-Android
-          path: export/release/android/bin/app/build/outputs/apk/release/*.apk
+          path: |
+            export/release/android/bin/app/build/outputs/apk/**/*.apk
+            export/release/android/bin/*.apk
           if-no-files-found: error
