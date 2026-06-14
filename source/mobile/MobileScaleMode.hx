@@ -1,9 +1,7 @@
 package mobile;
 
 import flixel.FlxG;
-import openfl.display.StageScaleMode;
 import flixel.math.FlxPoint;
-import flixel.math.FlxRect;
 import flixel.system.scaleModes.BaseScaleMode;
 
 class MobileScaleMode extends BaseScaleMode
@@ -12,23 +10,14 @@ class MobileScaleMode extends BaseScaleMode
 	{
 		var ratioX:Float = width / FlxG.width;
 		var ratioY:Float = height / FlxG.height;
-		var ratio:Float = Math.min(ratioX, ratioY);
 
 		deviceSize.set(width, height);
-		gameSize.set(Math.ceil(ratio * FlxG.width), Math.ceil(ratio * FlxG.height));
+		gameSize.set(width, height);
 
-		FlxG.scaleMode = this;
-
-		gameSize.x = width;
-		gameSize.y = height;
+		scale.x = ratioX;
+		scale.y = ratioY;
 
 		offset.x = 0;
 		offset.y = 0;
-
-		scale.x = gameSize.x / FlxG.width;
-		scale.y = gameSize.y / FlxG.height;
-
-		FlxG.game.scaleX = scale.x;
-		FlxG.game.scaleY = scale.y;
 	}
 }
