@@ -57,17 +57,7 @@ jobs:
           for f in source/Highscore.hx source/KeyBindMenu.hx source/ResultsScreen.hx source/DiffOverview.hx source/PlayState.hx; do
             [ -f "$f" ] && sed -i '/import io\.newgrounds\.NG;/d; /NGio\./d' "$f" || true
           done
-          python3 - << 'PYEOF'
-import re, os
-f = 'source/PlayState.hx'
-if not os.path.exists(f):
-    exit()
-with open(f) as fp:
-    txt = fp.read()
-txt = re.sub(r'^import webm\.WebmPlayer;$', '#if cpp\nimport webm.WebmPlayer;\n#end', txt, flags=re.MULTILINE)
-with open(f, 'w') as fp:
-    fp.write(txt)
-PYEOF
+          sed -i 's|^import webm\.WebmPlayer;$|#if cpp\nimport webm.WebmPlayer;\n#end|' source/PlayState.hx || true
 
       - name: Setup Lime Android config
         run: |
