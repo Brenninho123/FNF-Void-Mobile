@@ -45,18 +45,25 @@ jobs:
           haxelib install flixel 5.1.0 --quiet
           haxelib install flixel-addons 3.0.2 --quiet
           haxelib install flixel-ui 2.6.1 --quiet
-          haxelib install hscript 2.6.0 --quiet
+          haxelib install hscript 2.5.0 --quiet
           haxelib install actuate --quiet
-          haxelib install polymod 1.7.0 --quiet
+          haxelib git polymod https://github.com/larsiusprime/polymod.git b19c3d5 --quiet
           haxelib install extension-androidtools --quiet
           haxelib run lime setup -alias -y
           printf '\n' | haxelib run lime setup android
 
       - name: Patch source files
         run: |
+          # Fix Main.hx FlxGame constructor zoom type (Float -> Int)
+          sed -i 's/new FlxGame(gameWidth, gameHeight, initialState, zoom,/new FlxGame(gameWidth, gameHeight, initialState, Std.int(zoom),/' source/Main.hx
+
+          # Remove NGio references
           sed -i '/import io\.newgrounds\.NG;/d' source/Highscore.hx source/KeyBindMenu.hx source/ResultsScreen.hx source/DiffOverview.hx 2>/dev/null || true
-          sed -i '/NGio\.unlockMedal/d' source/Highscore.hx source/PlayState.hx 2>/dev/null || true
+          sed -i '/NGio\./d' source/Highscore.hx source/PlayState.hx 2>/dev/null || true
+
+          # Fix PlayState webm import (ensure it has cpp guard)
           sed -i '/import webm\.WebmPlayer;/d' source/PlayState.hx 2>/dev/null || true
+          sed -i '/#if cpp/a import webm.WebmPlayer;' source/PlayState.hx 2>/dev/null || true
 
       - name: Setup Lime Android config
         run: |
