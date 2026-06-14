@@ -1,7 +1,7 @@
 
 ![VoidMod logo](https://images.gamebanana.com/img/ss/mods/60fb35b519d2f.jpg)
 
-# Friday Night Funkin' VS. Void
+# Friday Night Funkin' VS. Void (Mobile Port)
 
 Meet A.C. Void, a cosmic pop star with an ego as massive as a black hole. (Don't ask him what A.C. stands for, he'll never let anyone know.)
 
