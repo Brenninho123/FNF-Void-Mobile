@@ -91,7 +91,7 @@
 	<haxelib name="actuate" />
 	<haxelib name="polymod" />
 
-	<haxelib name="extension-webm" />
+	<haxelib name="extension-webm" if="desktop" />
 
 	<haxelib name="faxe" if="switch" />
 
