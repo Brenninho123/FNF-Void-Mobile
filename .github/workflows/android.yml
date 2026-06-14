@@ -42,9 +42,9 @@ jobs:
         run: |
           haxelib install lime 8.3.2 --quiet
           haxelib install openfl 9.5.2 --quiet
-          haxelib install flixel 4.11.0 --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
+          haxelib install flixel 5.2.2 --quiet
+          haxelib install flixel-addons 3.2.1 --quiet
+          haxelib install flixel-ui 2.6.1 --quiet
           haxelib install hscript --quiet
           haxelib install actuate --quiet
           haxelib install polymod 1.6.0 --quiet
