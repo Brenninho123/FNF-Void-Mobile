@@ -57,7 +57,7 @@ jobs:
           for f in source/Highscore.hx source/KeyBindMenu.hx source/ResultsScreen.hx source/DiffOverview.hx source/PlayState.hx; do
             [ -f "$f" ] && sed -i '/import io\.newgrounds\.NG;/d; /NGio\./d' "$f" || true
           done
-          sed -i 's|^import webm\.WebmPlayer;$|#if cpp\nimport webm.WebmPlayer;\n#end|' source/PlayState.hx || true
+          sed -i '/^import webm\.WebmPlayer;$/d' source/PlayState.hx || true
 
       - name: Setup Lime Android config
         run: |
