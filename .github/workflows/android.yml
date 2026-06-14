@@ -57,8 +57,9 @@ jobs:
           for f in source/Highscore.hx source/KeyBindMenu.hx source/ResultsScreen.hx source/DiffOverview.hx source/PlayState.hx; do
             [ -f "$f" ] && sed -i '/import io\.newgrounds\.NG;/d; /NGio\./d' "$f" || true
           done
-          sed -i '/^import webm\.WebmPlayer;$/d' source/PlayState.hx || true
-          sed -i '/WebmPlayer\./d; /webmHandler\.source\|webmHandler\.makePlayer\|webmHandler\.pause\|webmHandler\.resume\|\.bitmapData/d' source/PlayState.hx || true
+          sed -i '/^import webm\.WebmPlayer;$/d; /^#if cpp$/{N; /\nimport webm\.WebmPlayer;/{N; /\n#end$/d}}' source/PlayState.hx || true
+          sed -i '/WebmPlayer\./d; /webmHandler\./d; /var data = webm/d; /var ourSource/d; /WEBM SHIT/d; /GlobalVideo\.setWebm/d; /videoSprite.*loadGraphic(data)/d' source/PlayState.hx || true
+          sed -i '/var data =.*bitmapData/d; /\.bitmapData/d' source/PlayState.hx || true
 
       - name: Setup Lime Android config
         run: |
