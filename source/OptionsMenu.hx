@@ -362,3 +362,65 @@ class OptionsMenu extends MusicBeatState
 		}
 	}
 }
+
+class HitboxOption extends Option
+{
+	var description:String;
+
+	public function new(desc:String = "")
+	{
+		super();
+		description = desc;
+		if (FlxG.save.data.hitboxMode == null)
+			FlxG.save.data.hitboxMode = true;
+	}
+
+	public override function getDisplay():String
+		return "Hitbox Mode: " + (FlxG.save.data.hitboxMode ? "ON" : "OFF");
+
+	public override function press():Bool
+	{
+		FlxG.save.data.hitboxMode = !FlxG.save.data.hitboxMode;
+		return true;
+	}
+
+	public override function getValue():String
+		return getDisplay();
+
+	public override function getAccept():Bool
+		return true;
+
+	public override function getDescription():String
+		return description;
+}
+
+class VSliceControlsOption extends Option
+{
+	var description:String;
+
+	public function new(desc:String = "")
+	{
+		super();
+		description = desc;
+		if (FlxG.save.data.vsliceControls == null)
+			FlxG.save.data.vsliceControls = false;
+	}
+
+	public override function getDisplay():String
+		return "V Slice Controls: " + (FlxG.save.data.vsliceControls ? "ON" : "OFF");
+
+	public override function press():Bool
+	{
+		FlxG.save.data.vsliceControls = !FlxG.save.data.vsliceControls;
+		return true;
+	}
+
+	public override function getValue():String
+		return getDisplay();
+
+	public override function getAccept():Bool
+		return true;
+
+	public override function getDescription():String
+		return description;
+}
