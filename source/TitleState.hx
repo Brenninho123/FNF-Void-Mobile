@@ -57,8 +57,13 @@ class TitleState extends MusicBeatState
 		#end
 
 		#if sys
-		if (!sys.FileSystem.exists(Sys.getCwd() + "/assets/replays"))
-			sys.FileSystem.createDirectory(Sys.getCwd() + "/assets/replays");
+		#if mobile
+		var replaysPath = lime.system.System.applicationStorageDirectory + "replays";
+		#else
+		var replaysPath = Sys.getCwd() + "/assets/replays";
+		#end
+		if (!sys.FileSystem.exists(replaysPath))
+			sys.FileSystem.createDirectory(replaysPath);
 		#end
 
 		@:privateAccess
