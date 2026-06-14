@@ -47,7 +47,7 @@ jobs:
           haxelib install flixel-ui 2.6.1 --quiet
           haxelib install hscript 2.5.0 --quiet
           haxelib install actuate --quiet
-          haxelib install polymod 1.5.0 --quiet
+          haxelib install polymod 1.6.0 --quiet
           haxelib install extension-androidtools --quiet
           haxelib run lime setup -alias -y
           printf '\n' | haxelib run lime setup android
