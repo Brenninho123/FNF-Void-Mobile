@@ -57,9 +57,12 @@ jobs:
           for f in source/Highscore.hx source/KeyBindMenu.hx source/ResultsScreen.hx source/DiffOverview.hx source/PlayState.hx; do
             [ -f "$f" ] && sed -i '/import io\.newgrounds\.NG;/d; /NGio\./d' "$f" || true
           done
-          sed -i '/^import webm\.WebmPlayer;$/d; /^#if cpp$/{N; /\nimport webm\.WebmPlayer;/{N; /\n#end$/d}}' source/PlayState.hx || true
-          sed -i '/WebmPlayer\./d; /webmHandler\./d; /var data = webm/d; /var ourSource/d; /WEBM SHIT/d; /GlobalVideo\.setWebm/d; /videoSprite.*loadGraphic(data)/d' source/PlayState.hx || true
-          sed -i '/var data =.*bitmapData/d; /\.bitmapData/d' source/PlayState.hx || true
+          grep -n "webm\.WebmPlayer" source/PlayState.hx | awk -F: '{print $1}' | sort -rn | while read ln; do
+            ctx_start=$((ln - 1))
+            ctx_end=$((ln + 1))
+            sed -n "${ctx_start}p" source/PlayState.hx | grep -q "#if cpp" && sed -i "${ctx_start},${ctx_end}d" source/PlayState.hx || sed -i "${ln}d" source/PlayState.hx
+          done || true
+          sed -i '/WebmPlayer\./d; /webmHandler\./d; /var ourSource/d; /WEBM SHIT/d; /GlobalVideo\.setWebm/d; /var data =.*bitmapData/d; /loadGraphic(data)/d' source/PlayState.hx || true
 
       - name: Setup Lime Android config
         run: |
