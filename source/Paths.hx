@@ -7,17 +7,10 @@ import flixel.FlxG;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
-#if mobile
-import lime.system.System as LimeSystem;
-#end
 
 class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
-
-	#if mobile
-	public static var storagePrefix:String = LimeSystem.applicationStorageDirectory;
-	#end
 
 	static var currentLevel:String;
 
@@ -188,11 +181,4 @@ class Paths
 		}
 		return FlxAtlasFrames.fromSpriteSheetPacker(image(key, library), file('images/$key.txt', library));
 	}
-
-	#if mobile
-	inline static public function mobileStoragePath(file:String):String
-	{
-		return storagePrefix + file;
-	}
-	#end
 }
