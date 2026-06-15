@@ -12,6 +12,11 @@ import openfl.Lib;
 import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.events.Event;
+import openfl.events.UncaughtErrorEvent;
+import openfl.Lib;
+#if mobile
+import mobile.MobileScaleMode;
+#end
 
 class Main extends Sprite
 {
@@ -36,10 +41,48 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
+
+		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(
+			UncaughtErrorEvent.UNCAUGHT_ERROR,
+			onUncaughtError
+		);
+
 		if (stage != null)
 			init();
 		else
 			addEventListener(Event.ADDED_TO_STAGE, init);
+	}
+
+	private function onUncaughtError(e:UncaughtErrorEvent):Void
+	{
+		e.preventDefault();
+		e.stopImmediatePropagation();
+
+		var msg:String = "Unknown error";
+		try
+		{
+			msg = Std.string(e.error);
+		}
+		catch (ex:Dynamic) {}
+
+		#if mobile
+		try
+		{
+			FlxG.switchState(new CrashState(msg));
+		}
+		catch (ex:Dynamic)
+		{
+			openfl.system.System.exit(0);
+		}
+		#else
+		try
+		{
+			var path = "./crash_" + Date.now().toString().split(":").join("-").split(" ").join("_") + ".txt";
+			sys.io.File.saveContent(path, "CRASH REPORT\n" + Date.now().toString() + "\n\n" + msg);
+		}
+		catch (ex:Dynamic) {}
+		Sys.exit(1);
+		#end
 	}
 
 	private function init(?E:Event):Void
@@ -51,31 +94,46 @@ class Main extends Sprite
 
 	private function setupGame():Void
 	{
-		var stageWidth:Int = Lib.current.stage.stageWidth;
-		var stageHeight:Int = Lib.current.stage.stageHeight;
-
 		#if cpp
 		initialState = Caching;
 		#end
 
-		game = new FlxGame(gameWidth, gameHeight, initialState, framerate, framerate, skipSplash, startFullscreen);
-		addChild(game);
+		try
+		{
+			game = new FlxGame(gameWidth, gameHeight, initialState, framerate, framerate, skipSplash, startFullscreen);
+			addChild(game);
+		}
+		catch (e:Dynamic)
+		{
+			openfl.system.System.exit(0);
+			return;
+		}
 
 		#if mobile
-		FlxG.scaleMode = new mobile.MobileScaleMode();
+		try
+		{
+			FlxG.scaleMode = new MobileScaleMode();
+		}
+		catch (e:Dynamic) {}
 		#end
 
 		#if desktop
-		DiscordClient.initialize();
-		Application.current.onExit.add(function(exitCode)
+		try
 		{
-			DiscordClient.shutdown();
-		});
+			DiscordClient.initialize();
+			Application.current.onExit.add(function(exitCode) { DiscordClient.shutdown(); });
+		}
+		catch (e:Dynamic) {}
 		#end
 
-		fpsCounter = new FPS(10, 3, 0xFFFFFF);
-		addChild(fpsCounter);
-		toggleFPS(FlxG.save.data.fps);
+		try
+		{
+			fpsCounter = new FPS(10, 3, 0xFFFFFF);
+			addChild(fpsCounter);
+			var fpsEnabled:Bool = FlxG.save.data.fps != null ? FlxG.save.data.fps : true;
+			toggleFPS(fpsEnabled);
+		}
+		catch (e:Dynamic) {}
 	}
 
 	var game:FlxGame;
@@ -83,12 +141,14 @@ class Main extends Sprite
 
 	public function toggleFPS(fpsEnabled:Bool):Void
 	{
-		fpsCounter.visible = fpsEnabled;
+		if (fpsCounter != null)
+			fpsCounter.visible = fpsEnabled;
 	}
 
 	public function changeFPSColor(color:FlxColor):Void
 	{
-		fpsCounter.textColor = color;
+		if (fpsCounter != null)
+			fpsCounter.textColor = color;
 	}
 
 	public function setFPSCap(cap:Float):Void
@@ -103,6 +163,6 @@ class Main extends Sprite
 
 	public function getFPS():Float
 	{
-		return fpsCounter.currentFPS;
+		return fpsCounter != null ? fpsCounter.currentFPS : 0;
 	}
 }
