@@ -119,6 +119,8 @@
 
 		<permission name="android.permission.INTERNET" />
 		<permission name="android.permission.VIBRATE" />
+
+		<template path="ManifestAdditions.xml" rename="app/src/main/ManifestAdditions.xml" />
 	</section>
 
 	<icon path="art/icon8.png" size="8" />
