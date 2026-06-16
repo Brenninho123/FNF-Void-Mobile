@@ -110,11 +110,23 @@ jobs:
         run: |
           echo "=== Root files ==="
           ls -la
-          echo "=== Looking for project file ==="
-          find . -maxdepth 2 -name "*.xml" -o -name "*.hxp" | head -20
+          echo "=== XML files found ==="
+          find . -maxdepth 3 -name "*.xml" | grep -v "export/" | head -20
+          echo "=== Project.xml content check ==="
+          [ -f "Project.xml" ] && echo "Project.xml EXISTS" || echo "Project.xml MISSING"
+          [ -f "project.xml" ] && echo "project.xml EXISTS (lowercase)" || true
 
       - name: Build APK
-        run: haxelib run lime build android -final
+        run: |
+          if [ -f "Project.xml" ]; then
+            haxelib run lime build android -final Project.xml
+          elif [ -f "project.xml" ]; then
+            haxelib run lime build android -final project.xml
+          else
+            echo "ERROR: No project file found!"
+            ls -la
+            exit 1
+          fi
 
       - name: Patch AndroidManifest post-build
         run: |
