@@ -83,6 +83,9 @@ jobs:
           haxelib install actuate --quiet
           haxelib install polymod 1.4.3 --quiet
           haxelib install extension-androidtools --quiet
+
+      - name: Setup Lime targets
+        run: |
           haxelib run lime setup -alias -y
           printf '\n' | haxelib run lime setup android
 
