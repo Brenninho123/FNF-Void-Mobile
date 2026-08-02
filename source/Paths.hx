@@ -7,12 +7,21 @@ import flixel.FlxG;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
+#if mobile
+import mobile.StorageUtil;
+#end
+#if sys
+import sys.FileSystem;
+#end
 
 class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
+	inline public static var ASTC_EXT = "astc";
 
 	static var currentLevel:String;
+	static var astcExistsCache:Map<String, Bool> = new Map();
+	static var overrideExistsCache:Map<String, Bool> = new Map();
 
 	static public function setCurrentLevel(name:String)
 	{
@@ -120,8 +129,23 @@ class Paths
 		return 'songs:assets/songs/${songLowercase}/Inst.$SOUND_EXT';
 	}
 
-	inline static public function image(key:String, ?library:String)
+	static public function image(key:String, ?library:String)
 	{
+		#if mobile
+		var overridePath = getStorageOverridePath('images/$key.png');
+		if (overridePath != null)
+			return overridePath;
+		#end
+
+		#if (mobile && cpp)
+		if (FlxG.save.data.useAstc == true)
+		{
+			var astcPath = getAstcPath('images/$key', library);
+			if (astcPath != null)
+				return astcPath;
+		}
+		#end
+
 		return getPath('images/$key.png', IMAGE, library);
 	}
 
@@ -130,7 +154,40 @@ class Paths
 		return 'assets/fonts/$key';
 	}
 
-	inline static public function getSparrowAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
+	#if mobile
+	static function getStorageOverridePath(relativePath:String):Null<String>
+	{
+		var cached = overrideExistsCache.get(relativePath);
+		if (cached == false)
+			return null;
+
+		if (cached == null)
+		{
+			cached = StorageUtil.exists('overrides/$relativePath');
+			overrideExistsCache.set(relativePath, cached);
+		}
+
+		return cached ? StorageUtil.getPath('overrides/$relativePath') : null;
+	}
+	#end
+
+	#if (mobile && cpp)
+	static function getAstcPath(baseKey:String, ?library:String):Null<String>
+	{
+		var basePath = getPath('$baseKey.$ASTC_EXT', BINARY, library);
+		var cached = astcExistsCache.get(basePath);
+
+		if (cached == null)
+		{
+			cached = OpenFlAssets.exists(basePath, BINARY);
+			astcExistsCache.set(basePath, cached);
+		}
+
+		return cached ? basePath : null;
+	}
+	#end
+
+	static public function getSparrowAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
 	{
 		var useCache = FlxG.save.data.cacheImages;
 		#if !cpp
@@ -160,7 +217,7 @@ class Paths
 	}
 	#end
 
-	inline static public function getPackerAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
+	static public function getPackerAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
 	{
 		var useCache = FlxG.save.data.cacheImages;
 		#if !cpp
