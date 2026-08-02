@@ -15,7 +15,7 @@
 
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" vsync="false" />
 
-	<window if="mobile" orientation="landscape" fullscreen="true" width="0" height="0" resizable="false" />
+	<window if="mobile" orientation="landscape" fullscreen="true" width="0" height="0" resizable="false" hardware="true" vsync="false" />
 
 	<window if="switch" orientation="landscape" fullscreen="true" width="0" height="0" resizable="true" />
 
@@ -116,11 +116,17 @@
 		<set name="ANDROID_MIN_SDK_VERSION" value="21" />
 		<set name="ANDROID_BUILD_SDK_VERSION" value="34" />
 		<set name="ANDROID_GRADLE_VERSION" value="8.3.0" />
+		<set name="ANDROID_VERSION_CODE" value="1" />
+		<set name="ANDROID_INSTALL_LOCATION" value="auto" />
 
 		<permission name="android.permission.INTERNET" />
 		<permission name="android.permission.VIBRATE" />
 
 		<template path="ManifestAdditions.xml" rename="app/src/main/ManifestAdditions.xml" />
+	</section>
+
+	<section if="ios">
+		<set name="IPHONE_VER" value="12.0" />
 	</section>
 
 	<icon path="art/icon8.png" size="8" />
