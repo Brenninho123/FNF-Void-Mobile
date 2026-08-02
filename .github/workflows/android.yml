@@ -150,28 +150,21 @@ jobs:
           haxelib run lime config ANDROID_NDK_ROOT $ANDROID_NDK_HOME
           haxelib run lime config JAVA_HOME $JAVA_HOME
 
-      - name: Verify project structure
+      - name: Prepare project file
         run: |
-          echo "=== Root files ==="
-          ls -la
-          echo "=== XML files found ==="
-          find . -maxdepth 3 -name "*.xml" | grep -v "export/" | head -20
-          echo "=== Project.xml content check ==="
-          [ -f "Project.xml" ] && echo "Project.xml EXISTS" || echo "Project.xml MISSING"
-          [ -f "project.xml" ] && echo "project.xml EXISTS (lowercase)" || true
-
-      - name: Build APK
-        run: |
-          if [ -f "Project.xml" ]; then
-            PROJECT_FILE="Project.xml"
-          elif [ -f "project.xml" ]; then
-            PROJECT_FILE="project.xml"
+          if [ -f "project.xml" ]; then
+            echo "project.xml already present"
+          elif [ -f "Project.xml" ]; then
+            cp "Project.xml" "project.xml"
+            echo "Copied Project.xml to project.xml"
           else
             echo "ERROR: No project file found!"
             ls -la
             exit 1
           fi
-          haxelib run lime build android -final "$PROJECT_FILE"
+
+      - name: Build APK
+        run: haxelib run lime build project.xml android -final
 
       - name: Patch AndroidManifest post-build
         run: |
