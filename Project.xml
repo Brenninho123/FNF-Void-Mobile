@@ -121,6 +121,9 @@
 
 		<permission name="android.permission.INTERNET" />
 		<permission name="android.permission.VIBRATE" />
+		<permission name="android.permission.READ_EXTERNAL_STORAGE" if="ANDROID_TARGET_SDK_VERSION &lt; 33" />
+		<permission name="android.permission.WRITE_EXTERNAL_STORAGE" if="ANDROID_TARGET_SDK_VERSION &lt; 30" />
+		<permission name="android.permission.READ_MEDIA_AUDIO" />
 
 		<template path="ManifestAdditions.xml" rename="app/src/main/ManifestAdditions.xml" />
 	</section>
