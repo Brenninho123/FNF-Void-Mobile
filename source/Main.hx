@@ -13,6 +13,7 @@ import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.UncaughtErrorEvent;
+import mobile.StorageUtil;
 #if mobile
 import mobile.MobileScaleMode;
 #end
@@ -67,6 +68,10 @@ class Main extends Sprite
 		}
 		catch (ex:Dynamic) {}
 
+		var timestamp:String = Date.now().toString().split(":").join("-").split(" ").join("_");
+		var crashPath:String = "crash_logs/crash_" + timestamp + ".txt";
+		StorageUtil.writeText(crashPath, "CRASH REPORT\n" + Date.now().toString() + "\n\n" + msg);
+
 		#if mobile
 		try
 		{
@@ -77,12 +82,6 @@ class Main extends Sprite
 			openfl.system.System.exit(0);
 		}
 		#else
-		try
-		{
-			var path = "./crash_" + Date.now().toString().split(":").join("-").split(" ").join("_") + ".txt";
-			sys.io.File.saveContent(path, "CRASH REPORT\n" + Date.now().toString() + "\n\n" + msg);
-		}
-		catch (ex:Dynamic) {}
 		Sys.exit(1);
 		#end
 	}
