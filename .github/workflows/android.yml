@@ -7,6 +7,15 @@ on:
   pull_request:
     branches: [FNF-Void-Mod]
 
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HAXE_VERSION: 4.3.7
+  NDK_VERSION: 21.4.7075529
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4 -Dorg.gradle.caching=true -Dorg.gradle.jvmargs="-Xmx4g"
+
 jobs:
   build:
     name: Build Android APK
@@ -25,20 +34,45 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Cache Android SDK components
+        id: sdk-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.ANDROID_SDK_ROOT }}/ndk
+            ${{ env.ANDROID_SDK_ROOT }}/licenses
+          key: android-sdk-ndk-${{ env.NDK_VERSION }}
+
       - name: Accept Android SDK licenses
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
         run: yes | sdkmanager --licenses
 
-      - name: Install Android NDK r21e
+      - name: Install Android NDK
         run: |
-          sdkmanager --install "ndk;21.4.7075529"
-          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/21.4.7075529" >> $GITHUB_ENV
+          if [ ! -d "$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" ]; then
+            sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
+          fi
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
 
-      - name: Setup Haxe 4.3.7
+      - name: Setup Haxe
         uses: krdlab/setup-haxe@v1
         with:
-          haxe-version: 4.3.7
+          haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Cache haxelib repository
+        id: haxelib-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/haxelib
+          key: haxelib-${{ runner.os }}-${{ env.HAXE_VERSION }}-v1
+
+      - name: Configure haxelib path
+        run: |
+          mkdir -p ~/haxelib
+          haxelib setup ~/haxelib
 
       - name: Install haxelibs
+        if: steps.haxelib-cache.outputs.cache-hit != 'true'
         run: |
           haxelib install lime 8.3.2 --quiet
           haxelib install openfl 9.2.0 --quiet
@@ -51,6 +85,16 @@ jobs:
           haxelib install extension-androidtools --quiet
           haxelib run lime setup -alias -y
           printf '\n' | haxelib run lime setup android
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
 
       - name: Patch source files
         run: |
@@ -119,14 +163,15 @@ jobs:
       - name: Build APK
         run: |
           if [ -f "Project.xml" ]; then
-            haxelib run lime build android -final Project.xml
+            PROJECT_FILE="Project.xml"
           elif [ -f "project.xml" ]; then
-            haxelib run lime build android -final project.xml
+            PROJECT_FILE="project.xml"
           else
             echo "ERROR: No project file found!"
             ls -la
             exit 1
           fi
+          haxelib run lime build android -final "$PROJECT_FILE" -Dandroid-build-tools-parallel
 
       - name: Patch AndroidManifest post-build
         run: |
@@ -144,3 +189,4 @@ jobs:
             export/release/android/bin/app/build/outputs/apk/**/*.apk
             export/release/android/bin/*.apk
           if-no-files-found: error
+          compression-level: 6
