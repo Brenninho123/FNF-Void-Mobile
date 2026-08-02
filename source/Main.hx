@@ -13,7 +13,6 @@ import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.UncaughtErrorEvent;
-import openfl.Lib;
 #if mobile
 import mobile.MobileScaleMode;
 #end
@@ -32,6 +31,9 @@ class Main extends Sprite
 	#if cpp
 	public static var webmHandler:Dynamic = null;
 	#end
+
+	var game:FlxGame;
+	var fpsCounter:FPS;
 
 	public static function main():Void
 	{
@@ -94,7 +96,7 @@ class Main extends Sprite
 
 	private function setupGame():Void
 	{
-		#if cpp
+		#if (cpp && !mobile)
 		initialState = Caching;
 		#end
 
@@ -136,9 +138,6 @@ class Main extends Sprite
 		catch (e:Dynamic) {}
 	}
 
-	var game:FlxGame;
-	var fpsCounter:FPS;
-
 	public function toggleFPS(fpsEnabled:Bool):Void
 	{
 		if (fpsCounter != null)
@@ -153,12 +152,12 @@ class Main extends Sprite
 
 	public function setFPSCap(cap:Float):Void
 	{
-		openfl.Lib.current.stage.frameRate = cap;
+		Lib.current.stage.frameRate = cap;
 	}
 
 	public function getFPSCap():Float
 	{
-		return openfl.Lib.current.stage.frameRate;
+		return Lib.current.stage.frameRate;
 	}
 
 	public function getFPS():Float
