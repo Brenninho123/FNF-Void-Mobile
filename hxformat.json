@@ -12,5 +12,14 @@
 		"doWhile": "next",
 		"tryBody": "next",
 		"tryCatch": "next"
+	},
+	"whitespace": {
+		"conditionalExprSameLine": true
+	},
+	"wrapping": {
+		"maxLineLength": 200
+	},
+	"indentation": {
+		"character": "tab"
 	}
 }
