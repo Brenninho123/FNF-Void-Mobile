@@ -123,9 +123,6 @@ class Main extends Sprite
 			FlxG.scaleMode = new MobileScaleMode();
 		}
 		catch (e:Dynamic) {}
-
-		Lib.current.stage.addEventListener(Event.DEACTIVATE, onStageDeactivate);
-		Lib.current.stage.addEventListener(Event.ACTIVATE, onStageActivate);
 		#end
 
 		#if desktop
@@ -167,20 +164,6 @@ class Main extends Sprite
 				Permissions.requestPermissions(missing);
 		}
 		catch (e:Dynamic) {}
-	}
-	#end
-
-	#if mobile
-	private function onStageDeactivate(e:Event):Void
-	{
-		if (game != null)
-			game.paused = true;
-	}
-
-	private function onStageActivate(e:Event):Void
-	{
-		if (game != null)
-			game.paused = false;
 	}
 	#end
 
