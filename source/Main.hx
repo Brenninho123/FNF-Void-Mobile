@@ -17,6 +17,9 @@ import mobile.StorageUtil;
 #if mobile
 import mobile.MobileScaleMode;
 #end
+#if android
+import extension.androidtools.Permissions;
+#end
 
 class Main extends Sprite
 {
@@ -99,6 +102,10 @@ class Main extends Sprite
 		initialState = Caching;
 		#end
 
+		#if android
+		requestMediaPermissions();
+		#end
+
 		try
 		{
 			game = new FlxGame(gameWidth, gameHeight, initialState, framerate, framerate, skipSplash, startFullscreen);
@@ -116,6 +123,9 @@ class Main extends Sprite
 			FlxG.scaleMode = new MobileScaleMode();
 		}
 		catch (e:Dynamic) {}
+
+		Lib.current.stage.addEventListener(Event.DEACTIVATE, onStageDeactivate);
+		Lib.current.stage.addEventListener(Event.ACTIVATE, onStageActivate);
 		#end
 
 		#if desktop
@@ -136,6 +146,43 @@ class Main extends Sprite
 		}
 		catch (e:Dynamic) {}
 	}
+
+	#if android
+	private function requestMediaPermissions():Void
+	{
+		try
+		{
+			var granted:Array<String> = Permissions.getGrantedPermissions();
+			var wanted:Array<String> = ["READ_MEDIA_IMAGES", "READ_MEDIA_VIDEO", "READ_MEDIA_AUDIO"];
+			var missing:Array<String> = [];
+
+			for (permission in wanted)
+			{
+				var fullName:String = "android.permission." + permission;
+				if (granted == null || granted.indexOf(fullName) == -1)
+					missing.push(permission);
+			}
+
+			if (missing.length > 0)
+				Permissions.requestPermissions(missing);
+		}
+		catch (e:Dynamic) {}
+	}
+	#end
+
+	#if mobile
+	private function onStageDeactivate(e:Event):Void
+	{
+		if (game != null)
+			game.paused = true;
+	}
+
+	private function onStageActivate(e:Event):Void
+	{
+		if (game != null)
+			game.paused = false;
+	}
+	#end
 
 	public function toggleFPS(fpsEnabled:Bool):Void
 	{
